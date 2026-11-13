@@ -1,13 +1,41 @@
+<!--mensaje para el navegador, instruccion obligatoria para la primera linea del documento web-->
 <!DOCTYPE html>
+<!--indica al navegador, a los motores de busqueda y tecnologías de asistencia que el contenido principal esta en Spanish-->
 <html lang="es">
+<!--sección invisible al usuario, contiene metadatos, info técnica y enlaces a recursos para que navegador y motores de busqueda entiendan y procesen la pagina web-->
 <head>
+    <!--indica al navegador la codificacion de caracteres a usar para mostrar el texto-->
     <meta charset="UTF-8">
+    <!--indica al navegador movil como adaptar el tamaño y la escala de la pagina web a la pantalla del dispositivo-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheets" href="style.css">
+    <!--define el titulo de una pagina web, es el texto que aparece en la pestaña del navegador y se usa cuando guardad en favoritos o marcadores, es el titulo principal del enlace que muestran los motores de busqueda en los resultados se llama (title tag) resume en pocas palabras de que trata la web-->
+    <title>Galería de fotos</title>
+    <!--conecta una hoja de estilos CSS externa a la pagina, (rel) indica al navegador que se cargara una hoja de estilos para definir el aspecto visual, (href) indica la ruta y el nombre del archivo CSS-->
+    <link rel="stylesheets" href="css/style.css">
 </head>
+<!--es el cuerpo del documento y contiene todo lo que ve el usuario para interactuar con la web, dentro van parrafos y encabezados, fotos y gráficos, estructura y diseño con tablas, listas y bloques principales como main, header y footer, elementos interactivos, botones, enlaces y formularios-->
 <body>
-    <section id="gallery"></section>
+    <!--define la cabecera, seccion de introduccion para un documento como logotipo o de navegacion menu de enlaces, formulario de busqueda y titulo principal (h1), se usa al inicio del body o dentro de article o section, (class) para conectar el elemento con una regla de diseño CSS o manipularlo con JavaScript-->
+    <header class="header">
+        <!--define un bloque destinado a la navegacion web con enlaces a menu ppal, indice etc., class para dar diseño o manipular con JS, aria-label para nombre descriptivo para lector de pantalla para discapacidad visual-->
+        <nav class="navbarcontainer" aria-label="Navegación principal">
+            <!--define un enlace para navegar a otra direccion, (#) marcador temporal o enlace vacio que redirige a la parte superior de la misma pagina, class logo para tamaño letra, fuente, margenes, (UN) y (.)va en texto plano y dentro de (span) contenedor de linea permite a SPLASH cambiar color o en negrita con CSS-->
+            <a href="#" class="logo">UN<span>SPLASH</span>.</a>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#categorias">Explorar</a></li>
+                <li><a href="#favoritos">Mis favoritos</a></li>
+                <li><a href="#galeria" class="nav-button">Descubrir<span>=></span></a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <!--define un bloque tematico independiente destinado a alojar una galeria de imagenes o proyectos que agrupa contenido relacionado con un mismo tema id es unico a esa seccion de la pagina no puede haber otro elemento con el mismo id en la pagina, id permite crear enlaces que llevan directamente a esa pagina, aplicar estilo visual, margenes, color de fondo o cuadriculas de fotos, sirve para localizar esa area desde un script y añadir efectos como abrir foto en pantalla completa o filtrar imagenes-->
+    <section id="gallery">
+        <!--incluye un titulo-->
+        <h2>Galería</h2>
+    </section>
+    <!---->
     <script src="js/main.js"></script>
 </body>
 </html>
