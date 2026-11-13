@@ -4,6 +4,13 @@ const AUTHORIZATION_KEY = "4Mu0qDn_RNZefQkqtQUokdytdwdA6VsKMdpbG9_5zJU";
 
 const PER_PAGE_NUM = 10;
 
+const ORIENTATION = Object.freeze({
+    ALL: "",
+    LANDSCAPE: "landscape",
+    PORTRAIT: "portrait",
+    SQUARISH: "squarish",
+});
+
 const fragment = document.createDocumentFragment();
 const gallery = document.querySelector("#gallery");
 
@@ -37,10 +44,11 @@ const obtenerDatosDeLaAPI = async (path) => {
     return datos;
 };
 
-const getDataQuery = async (query, page) => {
+const getDataQuery = async (query, orientation, page) => {
     const queryString = query.split(" ").map(word=>word.trim()).filter(word=>word!=="").join("+");
-    const data = await obtenerDatosDeLaAPI(`https://api.unsplash.com/search/photos?page=${page}&per_page=${PER_PAGE_NUM}&query=${queryString}`);
-    return data.results.map(result=>result.urls.small);
+    const orientationCommand = orientation === "" ? "" : `&orientation=${orientation}`;
+    const data = await obtenerDatosDeLaAPI(`https://api.unsplash.com/search/photos?page=${page}&per_page=${PER_PAGE_NUM}&query=${queryString}${orientationCommand}`);
+    return { images: data.results.map(result=>result.urls.small), image_num: data.total_pages };
 };
 
 // esto solo es para testear
@@ -61,9 +69,13 @@ const printImages = (imageArray) => {
 const init = async () => {
     try {
         // a getDataQuery le pasas una string the tags (lo que escribe el usuario en el buscador)
-        // te devuelve un array de strings que puedes poner en src (<img src=...>)
-        const images = await getDataQuery("cyberpunk mecha", 2);
-        printImages(images);
+        // tambien le pasas la orientacion de las imagenes, y la pagina de la galeria
+        // te devuelve un objecto con dos parametros
+        // images: un array de strings que puedes poner en src (<img src=...>)
+        // image_num: el numero maximo de imagenes que hay en toda la api con la query que has escrito
+        const imageData = await getDataQuery("cyberpunk mecha", ORIENTATION.ALL, 2);
+        console.log("ay " + imageData.image_num + " imagenes con tu busqueda");
+        printImages(imageData.images);
 
         //const datos = await obtenerDatosDeLaAPI("https://api.unsplash.com/search/photos?page=1&query=office");
         //console.log(datos["results"][0].links.html);
