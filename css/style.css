@@ -1,3 +1,7 @@
+/* (*)selector universal aplica las reglas entre llaves a todos los elementos del documento HTML*/
+/* (margin 0) elimina el margen exterior que el navegador añade por defecto a los elementos titulos, parrafos o cuerpo*/ 
+/* (padding 0) elimina el relleno interior que el navegador añade por defecto a elementos como listas o campos de formulario*/
+/* (box-sizing border-box) esta regla permite darle un width 100px y border y padding se calculan para no deformar el diseño*/
 * {
     margin: 0;
     padding: 0;
@@ -5,7 +9,33 @@
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
-
+/*display block para que cada imagen salte a una nueva linea width 100% la imagen se extiende hasta ocupar el 100% del ancho*/
 img {
+    display: block;
     width: 100%;
+}
+/*sirve para animar el desplazamiento cuando se navega a traves de enlaces o scripts de programacion en lugar de saltar de golpe*/
+html {
+    scroll-behavior: smooth;
+}
+
+:root {
+    --light-grey: #e0e0e0;
+    --background: #ffffff;
+}
+
+
+.header {
+    border-bottom: 1px solid black;
+    background: #330b68;
+}
+
+.logo {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+.logo span {
+    font-weight: 400;
 }
