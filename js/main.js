@@ -14,6 +14,7 @@ const ORIENTATION = Object.freeze({
 
 const fragment = document.createDocumentFragment();
 const gallery = document.querySelector("#gallery");
+const galleryFav = document.querySelector("#gallery-fav");
 
 const buscador = document.querySelector("#Buscador");
 const boton = document.querySelector("#boton-buscar");
@@ -77,94 +78,77 @@ const getDataQuery = async (query, orientation, page, perPage = PER_PAGE_NUM) =>
     };
 };
 
-// devuelve un array con todos favoritos. [{id, src, alt}, {id, src, alt}, ...]
-const getFavoritesData = () => {
-    const favorites = new Map(JSON.parse(localStorage.getItem(FAVORITES_STORAGE_NAME)));
-    return Array.from(favorites.values());
+// devuelve un mapa con las imagenes favoritas del local storage
+const loadFavorites = () => {
+    return new Map(JSON.parse(localStorage.getItem(FAVORITES_STORAGE_NAME)));
 };
 
-// helper para escribir al local storage the favoritos
-const writeFavoritesData = (callback) => {
-    const favorites = new Map(JSON.parse(localStorage.getItem(FAVORITES_STORAGE_NAME)));
-    callback(favorites);
-    localStorage.setItem(FAVORITES_STORAGE_NAME, JSON.stringify(Array.from(favorites)));
+// guarda un mapa con las imagenes favoritas en el local storage
+const saveFavorites = (favoritesData) => {
+    localStorage.setItem(FAVORITES_STORAGE_NAME, JSON.stringify(Array.from(favoritesData)));
 };
 
-// guarda una imagen en el local storage de favoritos
-const saveImageToFavorites = (imageData) => {
-    writeFavoritesData(map => map.set(imageData.id, imageData));
-};
+// printea imagenes en la section del html con el id="gallery"
+const printGallery = (imageArray, gallerySection) => {
+    gallerySection.innerHTML = "";
 
-// borra una imagen del local storage de favoritos
-const deleteImageFromFavorites = (id) => {
-    writeFavoritesData(map => map.delete(id));
-};
+    if (imageArray.length <= 0) return;
 
-// esto solo es para testear. printea imagenes en la section del html con el id="gallery"
-const printImages = (imageArray) => {
-    gallery.innerHTML = "";
+    const favoritesData = loadFavorites();
+
     imageArray.forEach(({ id, src, alt }) => {
         const divElement = document.createElement("div");
         const imgElement = document.createElement("img");
         imgElement.src = src;
         imgElement.alt = alt;
         const favElement = document.createElement("button")
-        // favElement.innerText = "❤️";
-        favElement.innerText = "🩶"
+        favElement.innerText = favoritesData.has(id) ? "❤️" : "🩶"
         favElement.id = "favButton";
         favElement.dataset.id = id;
         favElement.dataset.src = src;
         favElement.dataset.alt = alt;
 
-
         divElement.appendChild(imgElement);
         divElement.appendChild(favElement);
         fragment.appendChild(divElement);
     });
-    gallery.appendChild(fragment);
+
+    gallerySection.appendChild(fragment);
 };
 
-const init = async () => {
+const init = () => {
+    const favoritesData = loadFavorites();
+    printGallery(favoritesData.values(), galleryFav);
+};
+
+boton.addEventListener("click", async (ev) => {
     try {
-        const imageData = await getDataQuery("cyberpunk mecha", ORIENTATION.ALL, 2);
-        console.log("ay " + imageData.image_num + " imagenes con tu busqueda");
-        printImages(imageData.images);
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 2);
+        printGallery(imageData.images, gallery);
     } catch (error) {
         console.log(error);
     }
-}
-
-boton.addEventListener("click", async (ev) => {
-    buscador.value
-    const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 2);
-    printImages(imageData.images)
-
-})
+});
 
 document.addEventListener("click", (event) => {
+    // click en boton favoritos
     if (event.target.id === "favButton") {
-        saveImageToFavorites({
-            id: event.target.dataset.id,
-            src: event.target.dataset.src,
-            alt: event.target.dataset.alt
-        })
-        deleteImageFromFavorites(event.target.dataset.id)
-        if (true) { 
-            event.target.innerText = "❤️"
-            saveImageToFavorites({
-                id: event.target.dataset.id,
-                src: event.target.dataset.src,
-                alt: event.target.dataset.alt
-            })
+        const {id, src, alt} = event.target.dataset;
+        const newFavoritesData = new Map(loadFavorites());
+
+        if (!newFavoritesData.has(id)) { 
+            event.target.innerText = "❤️";
+            newFavoritesData.set(id, {id, src, alt});
         }
         else {
             event.target.innerText = "🩶"
-            deleteImageFromFavorites(event.target.dataset.id)
+            newFavoritesData.delete(id);
         }
 
+        saveFavorites(newFavoritesData);
+
+        printGallery(newFavoritesData.values(), galleryFav);
     }
-    
-})
+});
 
-
-
+init();
