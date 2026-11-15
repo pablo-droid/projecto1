@@ -15,6 +15,9 @@ const ORIENTATION = Object.freeze({
 const fragment = document.createDocumentFragment();
 const gallery = document.querySelector("#gallery");
 
+const buscador = document.querySelector("#Buscador");
+const boton = document.querySelector("#boton-buscar");
+
 // funcion de llamada a la API que devuelve promesa con la info de la API
 const obtenerDatosDeLaAPI = async (path) => {
     // esto es para hacer un cache
@@ -41,7 +44,7 @@ const obtenerDatosDeLaAPI = async (path) => {
     // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
     cache.set(path, datos);
     localStorage.setItem(FETCH_CACHE_STORAGE_NAME, JSON.stringify(Array.from(cache)));
-    
+
     return datos;
 };
 
@@ -59,11 +62,11 @@ const getDataQuery = async (query, orientation, page, perPage = PER_PAGE_NUM) =>
             image_num: 0
         };
     }
-    queryString = queryString.split(" ").map(word=>word.trim()).filter(word=>word!=="").join("+");
+    queryString = queryString.split(" ").map(word => word.trim()).filter(word => word !== "").join("+");
     const orientationCommand = orientation === "" ? "" : `&orientation=${orientation}`;
     const data = await obtenerDatosDeLaAPI(`https://api.unsplash.com/search/photos?page=${page}&per_page=${perPage}&query=${queryString}${orientationCommand}`);
-    return { 
-        images: data.results.map(({id, urls: {small}, alt_description})=>{
+    return {
+        images: data.results.map(({ id, urls: { small }, alt_description }) => {
             return {
                 id: id,
                 src: small,
@@ -89,25 +92,33 @@ const writeFavoritesData = (callback) => {
 
 // guarda una imagen en el local storage de favoritos
 const saveImageToFavorites = (imageData) => {
-    writeFavoritesData(map=>map.set(imageData.id, imageData));
+    writeFavoritesData(map => map.set(imageData.id, imageData));
 };
 
 // borra una imagen del local storage de favoritos
 const deleteImageFromFavorites = (id) => {
-    writeFavoritesData(map=>map.delete(id));
+    writeFavoritesData(map => map.delete(id));
 };
 
 // esto solo es para testear. printea imagenes en la section del html con el id="gallery"
 const printImages = (imageArray) => {
     gallery.innerHTML = "";
-    imageArray.forEach(({src, alt}) => {
+    imageArray.forEach(({ id, src, alt }) => {
         const divElement = document.createElement("div");
         const imgElement = document.createElement("img");
         imgElement.src = src;
         imgElement.alt = alt;
+        const favElement = document.createElement("button")
+        // favElement.innerText = "❤️";
+        favElement.innerText = "🩶"
+        favElement.id = "favButton";
+        favElement.dataset.id = id;
+        favElement.dataset.src = src;
+        favElement.dataset.alt = alt;
+
 
         divElement.appendChild(imgElement);
-
+        divElement.appendChild(favElement);
         fragment.appendChild(divElement);
     });
     gallery.appendChild(fragment);
@@ -123,4 +134,37 @@ const init = async () => {
     }
 }
 
-init()
+boton.addEventListener("click", async (ev) => {
+    buscador.value
+    const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 2);
+    printImages(imageData.images)
+
+})
+
+document.addEventListener("click", (event) => {
+    if (event.target.id === "favButton") {
+        saveImageToFavorites({
+            id: event.target.dataset.id,
+            src: event.target.dataset.src,
+            alt: event.target.dataset.alt
+        })
+        deleteImageFromFavorites(event.target.dataset.id)
+        if (true) { 
+            event.target.innerText = "❤️"
+            saveImageToFavorites({
+                id: event.target.dataset.id,
+                src: event.target.dataset.src,
+                alt: event.target.dataset.alt
+            })
+        }
+        else {
+            event.target.innerText = "🩶"
+            deleteImageFromFavorites(event.target.dataset.id)
+        }
+
+    }
+    
+})
+
+
+
