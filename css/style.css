@@ -19,15 +19,11 @@ html {
     scroll-behavior: smooth;
 }
 
-:root {
-    --light-grey: #e0e0e0;
-    --background: #ffffff;
-}
-
 
 .header {
     border-bottom: 1px solid black;
     background: #330b68;
+    
 }
 
 .logo {

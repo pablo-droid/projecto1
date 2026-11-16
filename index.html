@@ -30,14 +30,66 @@
                 <li><a href="#galeria" class="nav-button">Descubrir<span>=></span></a></li>
             </ul>
         </nav>
-        
-    </header>
 
-    <!--define un bloque tematico independiente destinado a alojar una galeria de imagenes o proyectos que agrupa contenido relacionado con un mismo tema id es unico a esa seccion de la pagina no puede haber otro elemento con el mismo id en la pagina, id permite crear enlaces que llevan directamente a esa pagina, aplicar estilo visual, margenes, color de fondo o cuadriculas de fotos, sirve para localizar esa area desde un script y añadir efectos como abrir foto en pantalla completa o filtrar imagenes-->
-    <section id="gallery">
-        <!--incluye un titulo-->
-        <h2>Galería</h2>
-    </section>
+    </header>
+    <main id="inicio">
+        <section class="hero container">
+            <p class="eyebrow">UN ESPACIO DE INSPIRACION</p>
+            <h1>Imagenes que<br>cuentan <span>historias.</span></h1>
+            <p class="hero-description">Explora fotografias increibles, descubre nuevas perspectivas y guarda las
+                imagenes que te resuenan</p>
+            <form class="search-form" id="search-form">
+                <label for="search-input" class="visually-hidden">Buscar fotografías</label>
+                <span class="search-icon" aria-hidden="true">-O</span>
+                <input type="search" id="search-input" placeholder="¿qué imagen buscas?" maxlength="40"><button
+                    type="submit">Buscar =></button>
+            </form>
+            <p class="search-error" id="search-error" aria-live="polite"></p>
+            <div class="hero-note">
+                <span>()</span> Encuentra belleza en cada imagen
+            </div>
+        </section>
+        <section class="categories-section container" id="categorias">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">DESCUBRE TU INSPIRACION</p>
+                    <h2>Explora por categorías</h2>
+                </div>
+                <p>un universo de imagenes por descubrir</p>
+            </div>
+            <div class="categories-grid">
+                <button class="categorie-card nature" data-category="nature">
+                    <span class="category-number">01 / 03</span>
+                    <span class="category-content">
+                        <span class="category-title">Naturaleza</span>
+                        <span class="category-subtitle">la belleza del mundo></span>
+                    </span>
+                    <span class="category-arrow">=></span>
+                </button>
+                <button class="category-card technology" data-category="technology">
+                    <span class="category-number">02 / 03</span>
+                    <span class="category-content">
+                        <span class="category-title">Tecnología</span>
+                        <span class="category-subtitle">El futuro en imagenes</span>
+                    </span>
+                    <span class="category-arrow">=></span>
+                 </button>
+                 
+            </div>
+        </section>
+        <!--define un bloque tematico independiente destinado a alojar una galeria de imagenes o proyectos que agrupa contenido relacionado con un mismo tema id es unico a esa seccion de la pagina no puede haber otro elemento con el mismo id en la pagina, id permite crear enlaces que llevan directamente a esa pagina, aplicar estilo visual, margenes, color de fondo o cuadriculas de fotos, sirve para localizar esa area desde un script y añadir efectos como abrir foto en pantalla completa o filtrar imagenes-->
+        <section id="gallery">
+            <!--incluye un titulo-->
+            <h2>Galería</h2>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="containerfooter-content">
+            <a href="#" class="logo"><span>UN</span>SPLASH<span>.</span></a>
+            <p>Descubre. Inspirate. Guarda</p>
+            <p>@ 2026 UNSPLASH </p>
+        </div>
+    </footer>
     <!---->
     <script src="js/main.js"></script>
 </body>
