@@ -22,39 +22,95 @@ const galleryFav = document.querySelector("#gallery-fav");
 const buscador = document.querySelector("#Buscador");
 const boton = document.querySelector("#boton-buscar");
 
+let currentGalleryPage = 1;
+let currentFavoritePage = 1;
 
-let currentGalleryPage = 1
+//boton de buscar
+boton.addEventListener("click", async (ev) => {
+    try {
+        userSearchInput = buscador.value
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 1);
+        printGallery(imageData.images, gallery);
+    } catch (error) {
+        console.log(error);
+    }
+});
 
-let currentFavoritePage = 1
+document.addEventListener("click", (event) => {
+    // click en boton favoritos
+    if (event.target.dataset.buttonId === "favButton") {
+        const {id, src, alt} = event.target.dataset;
+        const newFavoritesData = new Map(loadFavorites());
+
+        if (!newFavoritesData.has(id)) { 
+            event.target.innerText = "❤️";
+            newFavoritesData.set(id, {id, src, alt});
+        }
+        else {
+            event.target.innerText = "🩶"
+            newFavoritesData.delete(id);
+        }
+
+        saveFavorites(newFavoritesData);
+
+        printGallery(newFavoritesData.values(), galleryFav, false);
+    }
+});
+
+// click en pagina sigiente/anterior
+gallery.addEventListener("click", async(event) => {
+    if (event.target.dataset.buttonId === galleryPrevButton) {
+        let prevPageIndex = currentGalleryPage - 1;
+        if (prevPageIndex < 1) {
+            return;
+        }
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
+        if(imageData.images.length > 0) {
+            currentGalleryPage = prevPageIndex;
+            printGallery(imageData.images, gallery);
+        }
+    } else if (event.target.dataset.buttonId === galleryNextButton) {
+        let nextPageIndex = currentGalleryPage + 1
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        if(imageData.images.length > 0) {
+            currentGalleryPage = nextPageIndex;
+            printGallery(imageData.images, gallery);
+        }
+    }
+});
 
 // funcion de llamada a la API que devuelve promesa con la info de la API
 const obtenerDatosDeLaAPI = async (path) => {
-    // esto es para hacer un cache
-    // se guarda en el local storage los paths que entran a esta funcion y los datos en un array
-    // [{"https://api.unsplash.com...", datos}, {"https://api.unsplash.com...", datos}...]
-    // si ya hay una busqueda en el cache, se devuelve directamente (asi no hace falta llamar a fetch para la misma busqueda una y otra vez)
-    const cache = new Map(JSON.parse(localStorage.getItem(FETCH_CACHE_STORAGE_NAME)));
-    if (cache.has(path)) {
-        return cache.get(path);
-    }
-
-    const peticion = await fetch(path, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Client-ID ${AUTHORIZATION_KEY}`
+    try {
+        // esto es para hacer un cache
+        // se guarda en el local storage los paths que entran a esta funcion y los datos en un array
+        // [{"https://api.unsplash.com...", datos}, {"https://api.unsplash.com...", datos}...]
+        // si ya hay una busqueda en el cache, se devuelve directamente (asi no hace falta llamar a fetch para la misma busqueda una y otra vez)
+        const cache = new Map(JSON.parse(localStorage.getItem(FETCH_CACHE_STORAGE_NAME)));
+        if (cache.has(path)) {
+            return cache.get(path);
         }
-    });
-    if (peticion.ok === false) {
-        throw new Error(peticion.status);
+
+        const peticion = await fetch(path, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Client-ID ${AUTHORIZATION_KEY}`
+            }
+        });
+        if (peticion.ok === false) {
+            throw new Error(peticion.status);
+        }
+        const datos = await peticion.json();
+
+        // aqui se meten las busquedas nuevas en el cache
+        // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
+        cache.set(path, datos);
+        localStorage.setItem(FETCH_CACHE_STORAGE_NAME, JSON.stringify(Array.from(cache)));
+
+        return datos;
+    } catch (error) {
+        throw new Error("Failed to connect.");
     }
-    const datos = await peticion.json();
-
-    // aqui se meten las busquedas nuevas en el cache
-    // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
-    cache.set(path, datos);
-    localStorage.setItem(FETCH_CACHE_STORAGE_NAME, JSON.stringify(Array.from(cache)));
-
-    return datos;
 };
 
 // a getDataQuery le pasas una string the tags (lo que escribe el usuario en el buscador)
@@ -97,7 +153,7 @@ const saveFavorites = (favoritesData) => {
 };
 
 // printea imagenes en la section del html con el id="gallery"
-const printGallery = (imageArray, gallerySection) => {
+const printGallery = (imageArray, gallerySection, hasPagination = true) => {
     gallerySection.innerHTML = "";
 
     if (imageArray.length <= 0) return;
@@ -123,98 +179,26 @@ const printGallery = (imageArray, gallerySection) => {
 
     gallerySection.appendChild(fragment);
 
-    const arrowL = document.createElement("button")
-    arrowL.innerText = "Anterior";
-    arrowL.dataset.buttonId = galleryPrevButton
-    gallerySection.appendChild(arrowL);
+    if (hasPagination) {
+        const arrowL = document.createElement("button")
+        arrowL.innerText = "Anterior";
+        arrowL.dataset.buttonId = galleryPrevButton
+        gallerySection.appendChild(arrowL);
 
-    const pageNumElement = document.createElement("p");
-    pageNumElement.innerText = currentGalleryPage;
-    gallerySection.appendChild(pageNumElement);
+        const pageNumElement = document.createElement("p");
+        pageNumElement.innerText = currentGalleryPage;
+        gallerySection.appendChild(pageNumElement);
 
-    const arrowR = document.createElement("button")
-    arrowR.innerText = "Siguiente";
-    arrowR.dataset.buttonId = galleryNextButton
-    gallerySection.appendChild(arrowR);
-     
+        const arrowR = document.createElement("button")
+        arrowR.innerText = "Siguiente";
+        arrowR.dataset.buttonId = galleryNextButton
+        gallerySection.appendChild(arrowR);
+    }
 };
 
 const init = () => {
     const favoritesData = loadFavorites();
-    printGallery(favoritesData.values(), galleryFav);
+    printGallery(favoritesData.values(), galleryFav, false);
 };
-//boton de buscar
-boton.addEventListener("click", async (ev) => {
-    try {
-        userSearchInput = buscador.value
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 1);
-        printGallery(imageData.images, gallery);
-    } catch (error) {
-        console.log(error);
-    }
-});
-
-document.addEventListener("click", (event) => {
-    // click en boton favoritos
-    if (event.target.dataset.buttonId === "favButton") {
-        const {id, src, alt} = event.target.dataset;
-        const newFavoritesData = new Map(loadFavorites());
-
-        if (!newFavoritesData.has(id)) { 
-            event.target.innerText = "❤️";
-            newFavoritesData.set(id, {id, src, alt});
-        }
-        else {
-            event.target.innerText = "🩶"
-            newFavoritesData.delete(id);
-        }
-
-        saveFavorites(newFavoritesData);
-
-        printGallery(newFavoritesData.values(), galleryFav);
-    }
-});
-
-gallery.addEventListener("click", async(event)  => {
-    if (event.target.dataset.buttonId === galleryPrevButton) {
-        let prevPageIndex = currentGalleryPage - 1;
-        if (prevPageIndex < 1) {
-            return;
-        }
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = prevPageIndex;
-            printGallery(imageData.images, gallery);
-        }
-    } else if (event.target.dataset.buttonId === galleryNextButton) {
-        let nextPageIndex = currentGalleryPage + 1
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = nextPageIndex;
-            printGallery(imageData.images, gallery);
-        }
-    }
-})
-
-galleryFav.addEventListener("click", async(event)  => {
-    if (event.target.dataset.buttonId === galleryPrevButton) {
-        let prevPageIndex = currentGalleryPage - 1;
-        if (prevPageIndex < 1) {
-            return;
-        }
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = prevPageIndex;
-            printGallery(imageData.images, gallery);
-        }
-    } else if (event.target.dataset.buttonId === galleryNextButton) {
-        let nextPageIndex = currentGalleryPage + 1
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = nextPageIndex;
-            printGallery(imageData.images, gallery);
-        }
-    }
-});
 
 init();
