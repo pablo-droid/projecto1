@@ -3,6 +3,9 @@ const FAVORITES_STORAGE_NAME = "favorites";
 
 const AUTHORIZATION_KEY = "4Mu0qDn_RNZefQkqtQUokdytdwdA6VsKMdpbG9_5zJU";
 
+const galleryPrevButton = "galleryPrevButton"
+const galleryNextButton = "galleryNextButton"
+
 const PER_PAGE_NUM = 10;
 
 const ORIENTATION = Object.freeze({
@@ -18,6 +21,11 @@ const galleryFav = document.querySelector("#gallery-fav");
 
 const buscador = document.querySelector("#Buscador");
 const boton = document.querySelector("#boton-buscar");
+
+
+let currentGalleryPage = 1
+
+let currentFavoritePage = 1
 
 // funcion de llamada a la API que devuelve promesa con la info de la API
 const obtenerDatosDeLaAPI = async (path) => {
@@ -53,14 +61,14 @@ const obtenerDatosDeLaAPI = async (path) => {
 // tambien le pasas la orientacion de las imagenes, y la pagina de la galeria
 // te devuelve un objecto con dos parametros
 // images: un array de objetos con {id, src, alt}. src y alt se usa para las imagenes (<img src=... alt=...>)
-// image_num: el numero maximo de imagenes que hay en toda la api con la query que has escrito
+// page_num: el numero maximo de imagenes que hay en toda la api con la query que has escrito
 const getDataQuery = async (query, orientation, page, perPage = PER_PAGE_NUM) => {
     let queryString = query.trim();
     const regex = /^[a-zA-Z0-9À-ÿ\-\s]+$/;
     if (!regex.test(queryString)) {
         return {
             images: [],
-            image_num: 0
+            page_num: 0
         };
     }
     queryString = queryString.split(" ").map(word => word.trim()).filter(word => word !== "").join("+");
@@ -74,7 +82,7 @@ const getDataQuery = async (query, orientation, page, perPage = PER_PAGE_NUM) =>
                 alt: alt_description,
             }
         }),
-        image_num: data.total_pages
+        page_num: data.total_pages
     };
 };
 
@@ -103,7 +111,7 @@ const printGallery = (imageArray, gallerySection) => {
         imgElement.alt = alt;
         const favElement = document.createElement("button")
         favElement.innerText = favoritesData.has(id) ? "❤️" : "🩶"
-        favElement.id = "favButton";
+        favElement.dataset.buttonId = "favButton";
         favElement.dataset.id = id;
         favElement.dataset.src = src;
         favElement.dataset.alt = alt;
@@ -114,16 +122,30 @@ const printGallery = (imageArray, gallerySection) => {
     });
 
     gallerySection.appendChild(fragment);
+
+    const arrowL = document.createElement("button")
+    arrowL.innerText = "Anterior";
+    arrowL.dataset.buttonId = galleryPrevButton
+    gallerySection.appendChild(arrowL);
+
+    
+    
+    const arrowR = document.createElement("button")
+    arrowR.innerText = "Siguiente";
+    arrowR.dataset.buttonId = galleryNextButton
+    gallerySection.appendChild(arrowR);
+     
 };
 
 const init = () => {
     const favoritesData = loadFavorites();
     printGallery(favoritesData.values(), galleryFav);
 };
-
+//boton de buscar
 boton.addEventListener("click", async (ev) => {
     try {
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 2);
+        userSearchInput = buscador.value
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 1);
         printGallery(imageData.images, gallery);
     } catch (error) {
         console.log(error);
@@ -132,7 +154,7 @@ boton.addEventListener("click", async (ev) => {
 
 document.addEventListener("click", (event) => {
     // click en boton favoritos
-    if (event.target.id === "favButton") {
+    if (event.target.dataset.buttonId === "favButton") {
         const {id, src, alt} = event.target.dataset;
         const newFavoritesData = new Map(loadFavorites());
 
@@ -150,5 +172,21 @@ document.addEventListener("click", (event) => {
         printGallery(newFavoritesData.values(), galleryFav);
     }
 });
+
+gallery.addEventListener("click", async(event)  => {
+    if (event.target.dataset.buttonId === galleryPrevButton) {
+        
+    } else if (event.target.dataset.buttonId === galleryNextButton) {
+        let nextPageIndex = currentGalleryPage + 1
+        console.log(nextPageIndex);
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        if(imageData.images.length > 0) {
+            currentFavoritePage = nextPageIndex;
+            printGallery(imageData.images, gallery);
+        }
+        
+
+    }
+})
 
 init();
