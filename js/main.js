@@ -28,13 +28,7 @@ let currentOrientation = ORIENTATION.ALL
 
 //boton de buscar
 boton.addEventListener("click", async (ev) => {
-    try {
-        userSearchInput = buscador.value
-        const imageData = await getDataQuery(buscador.value, currentOrientation, 1);
-        printGallery(imageData.images, gallery);
-    } catch (error) {
-        console.log(error);
-    }
+    search(buscador.value);
 });
 
 document.addEventListener("click", (event) => {
@@ -55,6 +49,8 @@ document.addEventListener("click", (event) => {
         saveFavorites(newFavoritesData);
 
         printGallery(newFavoritesData.values(), galleryFav);
+    } else if (event.target.dataset.tag) {
+        search(event.target.dataset.tag);
     }
 });
 
@@ -62,6 +58,7 @@ document.addEventListener("change", (event) => {
     // click en boton favoritos
     if (event.target.id === "orientacion") {
         currentOrientation = event.target.value;
+        printGallery(newFavoritesData.values(), galleryFav, false);
     }
 });
 
@@ -89,36 +86,37 @@ gallery.addEventListener("click", async(event)  => {
 
 // funcion de llamada a la API que devuelve promesa con la info de la API
 const obtenerDatosDeLaAPI = async (path) => {
-    try {
-        // esto es para hacer un cache
-        // se guarda en el local storage los paths que entran a esta funcion y los datos en un array
-        // [{"https://api.unsplash.com...", datos}, {"https://api.unsplash.com...", datos}...]
-        // si ya hay una busqueda en el cache, se devuelve directamente (asi no hace falta llamar a fetch para la misma busqueda una y otra vez)
-        const cache = new Map(JSON.parse(localStorage.getItem(FETCH_CACHE_STORAGE_NAME)));
-        if (cache.has(path)) {
-            return cache.get(path);
-        }
+    // esto es para hacer un cache
+    // se guarda en el local storage los paths que entran a esta funcion y los datos en un array
+    // [{"https://api.unsplash.com...", datos}, {"https://api.unsplash.com...", datos}...]
+    // si ya hay una busqueda en el cache, se devuelve directamente (asi no hace falta llamar a fetch para la misma busqueda una y otra vez)
+    const cache = new Map(JSON.parse(localStorage.getItem(FETCH_CACHE_STORAGE_NAME)));
+    if (cache.has(path)) {
+        return cache.get(path);
+    }
 
+    let datos = null;
+    try {
         const peticion = await fetch(path, {
             method: 'GET',
             headers: {
                 'Authorization': `Client-ID ${AUTHORIZATION_KEY}`
-            }
+         }
         });
         if (peticion.ok === false) {
             throw new Error(peticion.status);
         }
-        const datos = await peticion.json();
-
-        // aqui se meten las busquedas nuevas en el cache
-        // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
-        cache.set(path, datos);
-        localStorage.setItem(FETCH_CACHE_STORAGE_NAME, JSON.stringify(Array.from(cache)));
-
-        return datos;
-    } catch (error) {
-        throw new Error("Failed to connect.");
+        datos = await peticion.json();
+    } catch(error) {
+        throw new Error(error.message);
     }
+    
+    // aqui se meten las busquedas nuevas en el cache
+    // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
+    cache.set(path, datos);
+    localStorage.setItem(FETCH_CACHE_STORAGE_NAME, JSON.stringify(Array.from(cache)));
+
+    return datos;
 };
 
 // a getDataQuery le pasas una string the tags (lo que escribe el usuario en el buscador)
@@ -159,6 +157,17 @@ const loadFavorites = () => {
 const saveFavorites = (favoritesData) => {
     localStorage.setItem(FAVORITES_STORAGE_NAME, JSON.stringify(Array.from(favoritesData)));
 };
+
+const search = async (searchInput) => {
+    try {
+        userSearchInput = searchInput
+        const imageData = await getDataQuery(userSearchInput, currentOrientation, 1);
+        printGallery(imageData.images, gallery);
+        window.scrollTo(0, 0);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 // printea imagenes en la section del html con el id="gallery"
 const printGallery = (imageArray, gallerySection, hasPagination = true) => {
@@ -204,7 +213,37 @@ const printGallery = (imageArray, gallerySection, hasPagination = true) => {
     }
 };
 
+const printFrontPage = async () => {
+    try {
+        const data1 = await getDataQuery("nature", ORIENTATION.ALL, 1, 1);
+        const data2 = await getDataQuery("technology", ORIENTATION.ALL, 1, 1);
+        const data3 = await getDataQuery("people", ORIENTATION.ALL, 1, 1);
+        
+        makeCard("nature", data1.images[0]);
+        makeCard("technology", data2.images[0]);
+        makeCard("people", data3.images[0]);
+    } catch {}
+};
+
+const makeCard = (tag, {src, alt}) => {
+    const divElement = document.createElement("div");
+    const h3Element = document.createElement("h3");
+    h3Element.innerText = tag;
+    const buttonElement = document.createElement("button");
+    const imgElement = document.createElement("img");
+    imgElement.dataset.tag = tag;
+    imgElement.src = src;
+    imgElement.alt = alt;
+
+    buttonElement.appendChild(imgElement);
+    divElement.appendChild(h3Element);
+    divElement.appendChild(buttonElement);
+
+    gallery.appendChild(divElement);
+};
+
 const init = () => {
+    printFrontPage();
     const favoritesData = loadFavorites();
     printGallery(favoritesData.values(), galleryFav, false);
 };
