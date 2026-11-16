@@ -9,3 +9,32 @@
 img {
     width: 100%;
 }
+
+.flex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.card {
+    border: 2px solid rgb(228, 227, 227);
+}
+
+.card button {
+    display: block;
+    margin: 10px auto;
+    background: none;
+    border: none;
+    font-size: 1rem;
+}
+
+@media screen and (min-width: 768px) {
+    .card {
+        width: 30%;
+    }
+
+    .card button {
+        font-size: 1.5rem;
+    }
+}

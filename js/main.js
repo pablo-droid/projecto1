@@ -50,7 +50,7 @@ document.addEventListener("click", (event) => {
 
         saveFavorites(newFavoritesData);
 
-        printGallery(newFavoritesData.values(), galleryFav);
+        printGallery(newFavoritesData.values(), galleryFav, false);
     } else if (event.target.dataset.tag) {
         userSearchInput = event.target.dataset.tag;
         search();
@@ -61,7 +61,6 @@ document.addEventListener("change", (event) => {
     // click en boton favoritos
     if (event.target.id === "orientacion") {
         currentOrientation = event.target.value;
-        printGallery(newFavoritesData.values(), galleryFav, false);
     }
 });
 
@@ -179,8 +178,12 @@ const printGallery = (imageArray, gallerySection, hasPagination = true) => {
 
     const favoritesData = loadFavorites();
 
+    const divGalleryElement = document.createElement("div");
+    divGalleryElement.classList.add("flex-grid");
+
     imageArray.forEach(({ id, src, alt }) => {
         const divElement = document.createElement("div");
+        divElement.classList.add("card");
         const imgElement = document.createElement("img");
         imgElement.src = src;
         imgElement.alt = alt;
@@ -196,23 +199,29 @@ const printGallery = (imageArray, gallerySection, hasPagination = true) => {
         fragment.appendChild(divElement);
     });
 
-    gallerySection.appendChild(fragment);
+    divGalleryElement.appendChild(fragment);
+    gallerySection.appendChild(divGalleryElement);
+
+    const divPageElement = document.createElement("div");
+    divPageElement.classList.add("flex-grid");
 
     if (hasPagination) {
         const arrowL = document.createElement("button")
         arrowL.innerText = "Anterior";
         arrowL.dataset.buttonId = galleryPrevButton
-        gallerySection.appendChild(arrowL);
+        divPageElement.appendChild(arrowL);
 
         const pageNumElement = document.createElement("p");
         pageNumElement.innerText = currentGalleryPage;
-        gallerySection.appendChild(pageNumElement);
+        divPageElement.appendChild(pageNumElement);
 
         const arrowR = document.createElement("button")
         arrowR.innerText = "Siguiente";
         arrowR.dataset.buttonId = galleryNextButton
-        gallerySection.appendChild(arrowR);
+        divPageElement.appendChild(arrowR);
     }
+
+    gallerySection.appendChild(divPageElement);
 };
 
 const makeCard = async (name, tag) => {
