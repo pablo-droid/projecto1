@@ -128,8 +128,10 @@ const printGallery = (imageArray, gallerySection) => {
     arrowL.dataset.buttonId = galleryPrevButton
     gallerySection.appendChild(arrowL);
 
-    
-    
+    const pageNumElement = document.createElement("p");
+    pageNumElement.innerText = currentGalleryPage;
+    gallerySection.appendChild(pageNumElement);
+
     const arrowR = document.createElement("button")
     arrowR.innerText = "Siguiente";
     arrowR.dataset.buttonId = galleryNextButton
@@ -175,18 +177,44 @@ document.addEventListener("click", (event) => {
 
 gallery.addEventListener("click", async(event)  => {
     if (event.target.dataset.buttonId === galleryPrevButton) {
-        
-    } else if (event.target.dataset.buttonId === galleryNextButton) {
-        let nextPageIndex = currentGalleryPage + 1
-        console.log(nextPageIndex);
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        let prevPageIndex = currentGalleryPage - 1;
+        if (prevPageIndex < 1) {
+            return;
+        }
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
         if(imageData.images.length > 0) {
-            currentFavoritePage = nextPageIndex;
+            currentGalleryPage = prevPageIndex;
             printGallery(imageData.images, gallery);
         }
-        
-
+    } else if (event.target.dataset.buttonId === galleryNextButton) {
+        let nextPageIndex = currentGalleryPage + 1
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        if(imageData.images.length > 0) {
+            currentGalleryPage = nextPageIndex;
+            printGallery(imageData.images, gallery);
+        }
     }
 })
+
+galleryFav.addEventListener("click", async(event)  => {
+    if (event.target.dataset.buttonId === galleryPrevButton) {
+        let prevPageIndex = currentGalleryPage - 1;
+        if (prevPageIndex < 1) {
+            return;
+        }
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
+        if(imageData.images.length > 0) {
+            currentGalleryPage = prevPageIndex;
+            printGallery(imageData.images, gallery);
+        }
+    } else if (event.target.dataset.buttonId === galleryNextButton) {
+        let nextPageIndex = currentGalleryPage + 1
+        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        if(imageData.images.length > 0) {
+            currentGalleryPage = nextPageIndex;
+            printGallery(imageData.images, gallery);
+        }
+    }
+});
 
 init();
