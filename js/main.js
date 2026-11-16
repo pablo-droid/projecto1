@@ -24,24 +24,24 @@ const boton = document.querySelector("#boton-buscar");
 
 let userSearchInput = "";
 let currentGalleryPage = 1;
-let currentFavoritePage = 1;
 let currentOrientation = ORIENTATION.ALL
 
 //boton de buscar
-boton.addEventListener("click", async (ev) => {
+boton.addEventListener("click", (ev) => {
+    currentGalleryPage = 1;
     userSearchInput = buscador.value;
-    search();
+    search(userSearchInput);
 });
 
 document.addEventListener("click", (event) => {
     // click en boton favoritos
     if (event.target.dataset.buttonId === "favButton") {
-        const {id, src, alt} = event.target.dataset;
+        const { id, src, alt } = event.target.dataset;
         const newFavoritesData = new Map(loadFavorites());
 
-        if (!newFavoritesData.has(id)) { 
+        if (!newFavoritesData.has(id)) {
             event.target.innerText = "❤️";
-            newFavoritesData.set(id, {id, src, alt});
+            newFavoritesData.set(id, { id, src, alt });
         }
         else {
             event.target.innerText = "🩶"
@@ -50,10 +50,11 @@ document.addEventListener("click", (event) => {
 
         saveFavorites(newFavoritesData);
 
-        printGallery(newFavoritesData.values(), galleryFav, false);
+        printGallery(Array.from(newFavoritesData.values()), galleryFav, false);
     } else if (event.target.dataset.tag) {
+        currentGalleryPage = 1;
         userSearchInput = event.target.dataset.tag;
-        search();
+        search(userSearchInput);
     }
 });
 
@@ -65,23 +66,31 @@ document.addEventListener("change", (event) => {
 });
 
 // click en pagina sigiente/anterior
-gallery.addEventListener("click", async(event)  => {
+gallery.addEventListener("click", async (event) => {
     if (event.target.dataset.buttonId === galleryPrevButton) {
         let prevPageIndex = currentGalleryPage - 1;
         if (prevPageIndex < 1) {
             return;
         }
-        const imageData = await getDataQuery(userSearchInput, currentOrientation, prevPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = prevPageIndex;
-            printGallery(imageData.images, gallery);
+        try {
+            const imageData = await getDataQuery(userSearchInput, currentOrientation, prevPageIndex);
+            if (imageData.images.length > 0) {
+                currentGalleryPage = prevPageIndex;
+                printGallery(imageData.images, gallery);
+            }
+        } catch (error) {
+            console.log(error);
         }
     } else if (event.target.dataset.buttonId === galleryNextButton) {
-        let nextPageIndex = currentGalleryPage + 1
-        const imageData = await getDataQuery(userSearchInput, currentOrientation, nextPageIndex);
-        if(imageData.images.length > 0) {
-            currentGalleryPage = nextPageIndex;
-            printGallery(imageData.images, gallery);
+        try {
+            let nextPageIndex = currentGalleryPage + 1
+            const imageData = await getDataQuery(userSearchInput, currentOrientation, nextPageIndex);
+            if (imageData.images.length > 0) {
+                currentGalleryPage = nextPageIndex;
+                printGallery(imageData.images, gallery);
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 });
@@ -103,16 +112,16 @@ const obtenerDatosDeLaAPI = async (path) => {
             method: 'GET',
             headers: {
                 'Authorization': `Client-ID ${AUTHORIZATION_KEY}`
-         }
+            }
         });
         if (peticion.ok === false) {
             throw new Error(peticion.status);
         }
         datos = await peticion.json();
-    } catch(error) {
+    } catch (error) {
         throw new Error(error.message);
     }
-    
+
     // aqui se meten las busquedas nuevas en el cache
     // la proxima vez que se pida la misma busqueda la returneara en el return de arriba
     cache.set(path, datos);
@@ -129,25 +138,33 @@ const obtenerDatosDeLaAPI = async (path) => {
 const getDataQuery = async (query, orientation, page, perPage = PER_PAGE_NUM) => {
     let queryString = query.trim();
     const regex = /^[a-zA-Z0-9À-ÿ\-\s]+$/;
+
+    let dataQuery = {
+        images: []
+    };
+
     if (!regex.test(queryString)) {
-        return {
-            images: [],
-            page_num: 0
-        };
+        return dataQuery;
     }
-    queryString = queryString.split(" ").map(word => word.trim()).filter(word => word !== "").join("+");
-    const orientationCommand = orientation === "" ? "" : `&orientation=${orientation}`;
-    const data = await obtenerDatosDeLaAPI(`https://api.unsplash.com/search/photos?page=${page}&per_page=${perPage}&query=${queryString}${orientationCommand}`);
-    return {
-        images: data.results.map(({ id, urls: { small }, alt_description }) => {
+
+    try {
+        queryString = queryString.split(" ").map(word => word.trim()).filter(word => word !== "").join("+");
+        const orientationCommand = orientation === "" ? "" : `&orientation=${orientation}`;
+        const data = await obtenerDatosDeLaAPI(`https://api.unsplash.com/search/photos?page=${page}&per_page=${perPage}&query=${queryString}${orientationCommand}`);
+
+        dataQuery.images = data.results.map(({ id, urls: { small }, alt_description }) => {
             return {
                 id: id,
                 src: small,
                 alt: alt_description,
             }
-        }),
-        page_num: data.total_pages
-    };
+        });
+
+    } catch (error) {
+        throw new Error(error.message);
+    }
+
+    return dataQuery;
 };
 
 // devuelve un mapa con las imagenes favoritas del local storage
@@ -160,9 +177,9 @@ const saveFavorites = (favoritesData) => {
     localStorage.setItem(FAVORITES_STORAGE_NAME, JSON.stringify(Array.from(favoritesData)));
 };
 
-const search = async () => {
+const search = async (searchInput) => {
     try {
-        const imageData = await getDataQuery(userSearchInput, currentOrientation, 1);
+        const imageData = await getDataQuery(searchInput, currentOrientation, 1);
         printGallery(imageData.images, gallery);
         window.scrollTo(0, 0);
     } catch (error) {
@@ -245,7 +262,9 @@ const makeCard = async (name, tag) => {
         divElement.appendChild(buttonElement);
 
         gallery.appendChild(divElement);
-    } catch {}
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 const init = () => {
@@ -253,7 +272,7 @@ const init = () => {
     makeCard("Tecnologia", "technology");
     makeCard("Personas", "people");
     const favoritesData = loadFavorites();
-    printGallery(favoritesData.values(), galleryFav, false);
+    printGallery(Array.from(favoritesData.values()), galleryFav, false);
 };
 
 init();
