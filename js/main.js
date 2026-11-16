@@ -24,12 +24,13 @@ const boton = document.querySelector("#boton-buscar");
 
 let currentGalleryPage = 1;
 let currentFavoritePage = 1;
+let currentOrientation = ORIENTATION.ALL
 
 //boton de buscar
 boton.addEventListener("click", async (ev) => {
     try {
         userSearchInput = buscador.value
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, 1);
+        const imageData = await getDataQuery(buscador.value, currentOrientation, 1);
         printGallery(imageData.images, gallery);
     } catch (error) {
         console.log(error);
@@ -53,25 +54,32 @@ document.addEventListener("click", (event) => {
 
         saveFavorites(newFavoritesData);
 
-        printGallery(newFavoritesData.values(), galleryFav, false);
+        printGallery(newFavoritesData.values(), galleryFav);
+    }
+});
+
+document.addEventListener("change", (event) => {
+    // click en boton favoritos
+    if (event.target.id === "orientacion") {
+        currentOrientation = event.target.value;
     }
 });
 
 // click en pagina sigiente/anterior
-gallery.addEventListener("click", async(event) => {
+gallery.addEventListener("click", async(event)  => {
     if (event.target.dataset.buttonId === galleryPrevButton) {
         let prevPageIndex = currentGalleryPage - 1;
         if (prevPageIndex < 1) {
             return;
         }
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, prevPageIndex);
+        const imageData = await getDataQuery(buscador.value, currentOrientation, prevPageIndex);
         if(imageData.images.length > 0) {
             currentGalleryPage = prevPageIndex;
             printGallery(imageData.images, gallery);
         }
     } else if (event.target.dataset.buttonId === galleryNextButton) {
         let nextPageIndex = currentGalleryPage + 1
-        const imageData = await getDataQuery(buscador.value, ORIENTATION.ALL, nextPageIndex);
+        const imageData = await getDataQuery(buscador.value, currentOrientation, nextPageIndex);
         if(imageData.images.length > 0) {
             currentGalleryPage = nextPageIndex;
             printGallery(imageData.images, gallery);
