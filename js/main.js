@@ -231,6 +231,7 @@ const makeCard = async (name, tag) => {
         if (data.images.length <= 0) return;
 
         const divElement = document.createElement("div");
+        divElement.classList.add("img-button");
         const h3Element = document.createElement("h3");
         h3Element.innerText = name;
         const buttonElement = document.createElement("button");

@@ -29,6 +29,12 @@ img {
     font-size: 1rem;
 }
 
+.img-button button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
 @media screen and (min-width: 768px) {
     .card {
         width: 30%;
