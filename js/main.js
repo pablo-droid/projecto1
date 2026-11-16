@@ -215,37 +215,33 @@ const printGallery = (imageArray, gallerySection, hasPagination = true) => {
     }
 };
 
-const printFrontPage = async () => {
+const makeCard = async (name, tag) => {
     try {
-        const data1 = await getDataQuery("nature", ORIENTATION.ALL, 1, 1);
-        const data2 = await getDataQuery("technology", ORIENTATION.ALL, 1, 1);
-        const data3 = await getDataQuery("people", ORIENTATION.ALL, 1, 1);
-        
-        makeCard("nature", data1.images[0]);
-        makeCard("technology", data2.images[0]);
-        makeCard("people", data3.images[0]);
+        const data = await getDataQuery(tag, ORIENTATION.ALL, 1, 1);
+
+        if (data.images.length <= 0) return;
+
+        const divElement = document.createElement("div");
+        const h3Element = document.createElement("h3");
+        h3Element.innerText = name;
+        const buttonElement = document.createElement("button");
+        const imgElement = document.createElement("img");
+        imgElement.dataset.tag = tag;
+        imgElement.src = data.images[0].src;
+        imgElement.alt = data.images[0].alt;
+
+        buttonElement.appendChild(imgElement);
+        divElement.appendChild(h3Element);
+        divElement.appendChild(buttonElement);
+
+        gallery.appendChild(divElement);
     } catch {}
 };
 
-const makeCard = (tag, {src, alt}) => {
-    const divElement = document.createElement("div");
-    const h3Element = document.createElement("h3");
-    h3Element.innerText = tag;
-    const buttonElement = document.createElement("button");
-    const imgElement = document.createElement("img");
-    imgElement.dataset.tag = tag;
-    imgElement.src = src;
-    imgElement.alt = alt;
-
-    buttonElement.appendChild(imgElement);
-    divElement.appendChild(h3Element);
-    divElement.appendChild(buttonElement);
-
-    gallery.appendChild(divElement);
-};
-
 const init = () => {
-    printFrontPage();
+    makeCard("Naturaleza", "nature");
+    makeCard("Tecnologia", "technology");
+    makeCard("Personas", "people");
     const favoritesData = loadFavorites();
     printGallery(favoritesData.values(), galleryFav, false);
 };
