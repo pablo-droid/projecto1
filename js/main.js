@@ -22,13 +22,15 @@ const galleryFav = document.querySelector("#gallery-fav");
 const buscador = document.querySelector("#Buscador");
 const boton = document.querySelector("#boton-buscar");
 
+let userSearchInput = "";
 let currentGalleryPage = 1;
 let currentFavoritePage = 1;
 let currentOrientation = ORIENTATION.ALL
 
 //boton de buscar
 boton.addEventListener("click", async (ev) => {
-    search(buscador.value);
+    userSearchInput = buscador.value;
+    search();
 });
 
 document.addEventListener("click", (event) => {
@@ -50,7 +52,8 @@ document.addEventListener("click", (event) => {
 
         printGallery(newFavoritesData.values(), galleryFav);
     } else if (event.target.dataset.tag) {
-        search(event.target.dataset.tag);
+        userSearchInput = event.target.dataset.tag;
+        search();
     }
 });
 
@@ -69,14 +72,14 @@ gallery.addEventListener("click", async(event)  => {
         if (prevPageIndex < 1) {
             return;
         }
-        const imageData = await getDataQuery(buscador.value, currentOrientation, prevPageIndex);
+        const imageData = await getDataQuery(userSearchInput, currentOrientation, prevPageIndex);
         if(imageData.images.length > 0) {
             currentGalleryPage = prevPageIndex;
             printGallery(imageData.images, gallery);
         }
     } else if (event.target.dataset.buttonId === galleryNextButton) {
         let nextPageIndex = currentGalleryPage + 1
-        const imageData = await getDataQuery(buscador.value, currentOrientation, nextPageIndex);
+        const imageData = await getDataQuery(userSearchInput, currentOrientation, nextPageIndex);
         if(imageData.images.length > 0) {
             currentGalleryPage = nextPageIndex;
             printGallery(imageData.images, gallery);
@@ -158,9 +161,8 @@ const saveFavorites = (favoritesData) => {
     localStorage.setItem(FAVORITES_STORAGE_NAME, JSON.stringify(Array.from(favoritesData)));
 };
 
-const search = async (searchInput) => {
+const search = async () => {
     try {
-        userSearchInput = searchInput
         const imageData = await getDataQuery(userSearchInput, currentOrientation, 1);
         printGallery(imageData.images, gallery);
         window.scrollTo(0, 0);
