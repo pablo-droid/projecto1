@@ -6,10 +6,20 @@
     box-sizing: border-box;
 }
 
+body {
+    padding: 12px;
+    font-family: sans-serif;
+}
+
+#gallery {
+    padding: 20px;
+}
+
 img {
     width: 100%;
 }
 
+/*head*/
 .flex-grid {
     display: flex;
     flex-wrap: wrap;
@@ -35,7 +45,100 @@ img {
     cursor: pointer;
 }
 
-@media screen and (min-width: 768px) {
+/*head*/
+/*sergio*/
+h1 {
+    font-size: xx-large;
+    letter-spacing: 5px;
+    text-align: center;
+    color: #ffffff;
+    background-color: #354760;
+    padding: 20px;
+    margin: 2px;
+    border-radius: 12px;
+}
+
+#sectImages {
+    display: flexbox;
+    border-radius: 12px;
+    font-size: medium;
+    margin-bottom: 12px;
+    color: #0f172a;
+    background-color: cadetblue;
+    margin: 5px;
+    padding: 10px;
+}
+
+
+#Buscador,
+#boton-buscar,
+#orientacion {
+    height: 25px;
+    padding: 0 16px;
+    font-size: medium;
+    font-family:sans-serif;
+    border-radius: 10px;
+    margin: 3px;
+    cursor: pointer;
+}
+#Buscador {
+    cursor: text;
+}
+#boton-buscar:hover {
+    background-color: #4d698c;
+    transform: translateY(-2px);
+}
+
+#sectFavorits {
+    display: flexbox;
+    border-radius: 12px;
+    font-size: medium;
+    margin-bottom: 12px;
+    color: #0f172a;
+    background-color: #c86d51;
+    margin: 5px;
+    padding: 10px;
+}
+
+button[data-button-id="galleryPrevButton"],
+button[data-button-id="galleryNextButton"] {
+    display: inline-block;
+    background-color: #354760;
+    color:white;
+    border-radius: 10px;
+    padding: 10px;
+    font-family: sans-serif;
+    font-size: small;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+button[data-button-id="galleryPrevButton"]:hover,
+button[data-button-id="galleryNextButton"]:hover {
+    background-color: #263447;
+    transform: translateY(-2px);
+}
+
+
+
+/* ---- 768px-------- */
+@media screen and (min-width:768px) {
+    h1 {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+    }
+
+    h3 {
+        font-size: 2rem;
+    }
+
+    p {
+        font-size: 1.5rem;
+    }
+
     .card {
         width: 30%;
     }
@@ -43,4 +146,19 @@ img {
     .card button {
         font-size: 1.5rem;
     }
+}
+
+
+/*---------992px------ */
+@media screen and (min-width:992px) {
+
+
+}
+
+
+/*-----------1200px-------- */
+@media screen and (min-width:1200px) {
+
+
+/*sergio*/
 }
